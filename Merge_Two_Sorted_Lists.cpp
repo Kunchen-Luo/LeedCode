@@ -6,7 +6,7 @@ struct ListNode {
     ListNode(int x) : val(x), next(nullptr) {}
     ListNode(int x, ListNode *next) : val(x), next(next) {}
 };
-class Solution {
+class Solution_of_iteration {
 public:
     ListNode* mergeTwoLists(ListNode* list1, ListNode* list2) {
         ListNode dummy(0);  //dummy是一个“虚拟”头节点，方便操作。记得初始化
@@ -26,11 +26,29 @@ public:
         return dummy.next;
     }
 };
+
+class Solution_of_recursion {
+    public:
+        ListNode* mergeTwoLists(ListNode* list1, ListNode* list2) {
+            if (list1 == nullptr)
+                return list2;
+            else if (list2 == nullptr)
+                return list1;
+            else if (list1->val < list2->val) {
+                list1->next = mergeTwoLists(list1->next, list2);
+                return list1;
+            } else {
+                list2->next = mergeTwoLists(list1, list2->next);
+                return list2;
+            }
+        }
+};
 int main(){
     ListNode* list1 = new ListNode(1, new ListNode(2, new ListNode(4)));
     ListNode* list2 = new ListNode(1, new ListNode(3, new ListNode(4)));
-    Solution sol;
-    ListNode* mergedList = sol.mergeTwoLists(list1, list2);
+    Solution_of_iteration sol;
+    Solution_of_recursion sol2;
+    ListNode* mergedList = sol2.mergeTwoLists(list1, list2);
     while (mergedList != nullptr) {
         std::cout << mergedList->val << " ";
         mergedList = mergedList->next;
