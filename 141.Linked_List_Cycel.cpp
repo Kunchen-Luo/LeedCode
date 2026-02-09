@@ -4,7 +4,7 @@ struct ListNode {
     ListNode(int val): val(val), next(nullptr) {}
 };
 
-//主要矛盾: 1. 非环形链表必然存在空指针; 2.快指针必然追上慢指针
+//主要矛盾: 1. 非环形链表必然存在空指针; 2.如果链表成环，快指针必然追上慢指针
 class Floyd_cycle_detection_algorithm_Solution {    
     public:
         bool hasCycle(ListNode *head) {
