@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>给你的小宇宙</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Noto+Sans+SC:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-1: #05152f;
+      --bg-2: #0c274d;
+      --bg-3: #20112b;
+      --rose: #ff4d8d;
+      --rose-soft: #ff86b0;
+      --gold: #ffd08a;
+      --ice: #86d0ff;
+      --text: #fff7f2;
+      --shadow: rgba(255, 77, 141, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: "Noto Sans SC", sans-serif;
+      color: var(--text);
+      background: linear-gradient(130deg, var(--bg-1), var(--bg-2), var(--bg-3));
+      background-size: 250% 250%;
+      animation: skyShift 16s ease infinite;
+    }
+
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .glow-blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(55px);
+      opacity: 0.35;
+      z-index: 0;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .blob-a {
+      width: 36vmax;
+      height: 36vmax;
+      top: -12vmax;
+      left: -8vmax;
+      background: radial-gradient(circle at center, #ff739f 0%, transparent 62%);
+      animation: driftA 12s ease-in-out infinite alternate;
+    }
+
+    .blob-b {
+      width: 40vmax;
+      height: 40vmax;
+      right: -14vmax;
+      bottom: -12vmax;
+      background: radial-gradient(circle at center, #69c8ff 0%, transparent 65%);
+      animation: driftB 14s ease-in-out infinite alternate;
+    }
+
+    .scene {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: min(90vw, 760px);
+      min-height: min(80vh, 700px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 30px;
+      padding: clamp(20px, 4vw, 36px);
+      background:
+        linear-gradient(140deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow:
+        0 20px 55px rgba(0, 0, 0, 0.35),
+        0 0 60px rgba(255, 77, 141, 0.18);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      animation: rise 900ms cubic-bezier(.2, .9, .2, 1) both;
+    }
+
+    .top-text {
+      width: 100%;
+      text-align: center;
+      opacity: 0;
+      animation: fadeIn 1s ease forwards;
+      animation-delay: 250ms;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 13px;
+      letter-spacing: 2px;
+      padding: 7px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 999px;
+      color: #ffe3ee;
+      margin-bottom: 14px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .title {
+      font-family: "ZCOOL QingKe HuangYou", cursive;
+      font-size: clamp(34px, 6vw, 64px);
+      line-height: 1.1;
+      text-shadow: 0 0 16px rgba(255, 130, 173, 0.65);
+      letter-spacing: 1.5px;
+      min-height: 1.3em;
+    }
+
+    .subtitle {
+      margin-top: 12px;
+      font-size: clamp(14px, 2.6vw, 18px);
+      color: rgba(255, 247, 242, 0.88);
+      letter-spacing: 1px;
+    }
+
+    .center {
+      flex: 1;
+      width: 100%;
+      display: grid;
+      place-items: center;
+      position: relative;
+      opacity: 0;
+      animation: fadeIn 1s ease forwards;
+      animation-delay: 550ms;
+    }
+
+    .heart-wrap {
+      position: relative;
+      width: min(56vw, 250px);
+      aspect-ratio: 1 / 1;
+      display: grid;
+      place-items: center;
+    }
+
+    .heart {
+      width: 40%;
+      aspect-ratio: 1 / 1;
+      background: radial-gradient(circle at 30% 30%, #ffd7e4 0%, var(--rose-soft) 18%, var(--rose) 70%);
+      position: relative;
+      transform: rotate(-45deg);
+      box-shadow:
+        0 0 40px rgba(255, 77, 141, 0.55),
+        0 0 85px rgba(255, 77, 141, 0.3);
+      animation: heartbeat 1.15s ease-in-out infinite;
+    }
+
+    .heart::before,
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: inherit;
+    }
+
+    .heart::before {
+      top: -50%;
+      left: 0;
+    }
+
+    .heart::after {
+      left: 50%;
+      top: 0;
+    }
+
+    .ring {
+      position: absolute;
+      border: 1.5px solid rgba(255, 166, 199, 0.45);
+      border-radius: 50%;
+      inset: 15%;
+      animation: pulse 2.8s linear infinite;
+    }
+
+    .ring.r2 {
+      inset: 6%;
+      border-color: rgba(134, 208, 255, 0.4);
+      animation-delay: 700ms;
+    }
+
+    .ring.r3 {
+      inset: -4%;
+      border-color: rgba(255, 208, 138, 0.35);
+      animation-delay: 1.4s;
+    }
+
+    .spark {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fff3cf;
+      box-shadow: 0 0 15px #fff3cf;
+      animation: twinkle 2.4s linear infinite;
+    }
+
+    .s1 { top: 16%; left: 22%; animation-delay: 0.2s; }
+    .s2 { top: 24%; right: 18%; animation-delay: 0.9s; }
+    .s3 { bottom: 20%; left: 16%; animation-delay: 1.4s; }
+    .s4 { bottom: 26%; right: 24%; animation-delay: 1.9s; }
+
+    .bottom {
+      width: 100%;
+      text-align: center;
+      opacity: 0;
+      animation: fadeIn 1s ease forwards;
+      animation-delay: 850ms;
+    }
+
+    .line {
+      font-size: clamp(16px, 2.6vw, 21px);
+      line-height: 1.8;
+      color: rgba(255, 247, 242, 0.95);
+      margin-bottom: 12px;
+      text-shadow: 0 0 14px rgba(0, 0, 0, 0.22);
+    }
+
+    #finalLine {
+      min-height: 1.6em;
+      color: var(--gold);
+      font-weight: 700;
+      text-shadow: 0 0 16px rgba(255, 208, 138, 0.5);
+    }
+
+    .action {
+      margin-top: 4px;
+      border: 0;
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #2a0d1a;
+      cursor: pointer;
+      background: linear-gradient(135deg, #ffd79b, #ff8fb8);
+      box-shadow:
+        0 8px 24px var(--shadow),
+        inset 0 0 14px rgba(255, 255, 255, 0.6);
+      transition: transform 200ms ease, box-shadow 200ms ease;
+    }
+
+    .action:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow:
+        0 10px 28px rgba(255, 77, 141, 0.5),
+        inset 0 0 18px rgba(255, 255, 255, 0.65);
+    }
+
+    .action:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 13px;
+      color: rgba(255, 247, 242, 0.74);
+    }
+
+    @keyframes skyShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes driftA {
+      from { transform: translate(0, 0) scale(1); }
+      to { transform: translate(6vmax, 5vmax) scale(1.12); }
+    }
+
+    @keyframes driftB {
+      from { transform: translate(0, 0) scale(1); }
+      to { transform: translate(-7vmax, -4vmax) scale(1.08); }
+    }
+
+    @keyframes rise {
+      from { transform: translateY(16px) scale(0.985); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes heartbeat {
+      0% { transform: rotate(-45deg) scale(1); }
+      14% { transform: rotate(-45deg) scale(1.18); }
+      28% { transform: rotate(-45deg) scale(1); }
+      42% { transform: rotate(-45deg) scale(1.12); }
+      70% { transform: rotate(-45deg) scale(1); }
+      100% { transform: rotate(-45deg) scale(1); }
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(0.78);
+        opacity: 0.7;
+      }
+      80% {
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1.35);
+        opacity: 0;
+      }
+    }
+
+    @keyframes twinkle {
+      0%, 100% { transform: scale(0.55); opacity: 0.35; }
+      50% { transform: scale(1.2); opacity: 1; }
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        border-radius: 24px;
+        min-height: min(84vh, 680px);
+      }
+      .line {
+        line-height: 1.65;
+      }
+      .action {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bgCanvas"></canvas>
+  <div class="glow-blob blob-a"></div>
+  <div class="glow-blob blob-b"></div>
+
+  <main class="scene">
+    <section class="card">
+      <div class="top-text">
+        <div class="tag">FOR 胡潇尹 ONLY</div>
+        <h1 class="title" id="typingTitle"></h1>
+        <p class="subtitle">每一次心跳，都在悄悄对胡潇尹说喜欢</p>
+      </div>
+
+      <div class="center">
+        <div class="heart-wrap">
+          <div class="ring r1"></div>
+          <div class="ring r2"></div>
+          <div class="ring r3"></div>
+          <div class="heart"></div>
+          <i class="spark s1"></i>
+          <i class="spark s2"></i>
+          <i class="spark s3"></i>
+          <i class="spark s4"></i>
+        </div>
+      </div>
+
+      <div class="bottom">
+        <p class="line">从和胡潇尹相遇那天起，星空都比以前更亮了。</p>
+        <p class="line" id="finalLine">胡潇尹，想牵着你的手，走完每一个浪漫的四季。</p>
+        <button class="action" id="surpriseBtn">点我一下，接收我的心意</button>
+        <p class="hint">点击屏幕也会触发爱心烟花</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+    const typingTitle = document.getElementById("typingTitle");
+    const finalLine = document.getElementById("finalLine");
+    const surpriseBtn = document.getElementById("surpriseBtn");
+
+    let width = 0;
+    let height = 0;
+    const stars = [];
+    const meteors = [];
+    const particles = [];
+    const hearts = [];
+
+    const recipientName = "胡潇尹";
+    const titleText = `${recipientName}，我喜欢你，不止今天。`;
+    const finalTexts = [
+      `${recipientName}，可以让我成为你故事里的那个人吗？`,
+      `想和${recipientName}一起，把平凡的日子过成诗。`,
+      `${recipientName}，你愿意和我在一起吗？`
+    ];
+
+    function resize() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * window.devicePixelRatio;
+      canvas.height = height * window.devicePixelRatio;
+      ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+      initStars();
+    }
+
+    function initStars() {
+      stars.length = 0;
+      const count = Math.floor((width * height) / 3800);
+      for (let i = 0; i < count; i += 1) {
+        stars.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          r: Math.random() * 1.8 + 0.3,
+          a: Math.random() * 0.7 + 0.2,
+          tw: Math.random() * 0.025 + 0.005
+        });
+      }
+    }
+
+    function drawHeartShape(x, y, size, color, alpha = 1, rotation = 0) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rotation);
+      ctx.scale(size, size);
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.moveTo(0, -0.35);
+      ctx.bezierCurveTo(-0.58, -0.9, -1.25, -0.2, 0, 1);
+      ctx.bezierCurveTo(1.25, -0.2, 0.58, -0.9, 0, -0.35);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function spawnMeteor() {
+      const fromLeft = Math.random() > 0.5;
+      meteors.push({
+        x: fromLeft ? -30 : width + 30,
+        y: Math.random() * (height * 0.55),
+        vx: fromLeft ? Math.random() * 3 + 4 : -(Math.random() * 3 + 4),
+        vy: Math.random() * 1.2 + 0.8,
+        life: 0,
+        maxLife: Math.random() * 40 + 50
+      });
+    }
+
+    function spawnBurst(x, y, count = 28) {
+      for (let i = 0; i < count; i += 1) {
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+        const speed = Math.random() * 2.8 + 1;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 0.4,
+          size: Math.random() * 8 + 6,
+          life: 0,
+          maxLife: Math.random() * 45 + 45,
+          color: Math.random() > 0.5 ? "#ff7eab" : "#ffd08a",
+          rotation: Math.random() * Math.PI
+        });
+      }
+    }
+
+    function spawnFloatingHeart(x = Math.random() * width, y = height + 30) {
+      hearts.push({
+        x,
+        y,
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: -(Math.random() * 1.3 + 0.8),
+        size: Math.random() * 10 + 6,
+        life: 0,
+        maxLife: Math.random() * 130 + 130,
+        color: Math.random() > 0.3 ? "#ff76a6" : "#ffd08a",
+        rotation: (Math.random() - 0.5) * 0.8
+      });
+    }
+
+    function typeWriter(text, speed = 85) {
+      let i = 0;
+      const timer = setInterval(() => {
+        typingTitle.textContent = text.slice(0, i + 1);
+        i += 1;
+        if (i >= text.length) {
+          clearInterval(timer);
+        }
+      }, speed);
+    }
+
+    function cycleFinalText() {
+      let index = 0;
+      setInterval(() => {
+        index = (index + 1) % finalTexts.length;
+        finalLine.style.opacity = "0";
+        setTimeout(() => {
+          finalLine.textContent = finalTexts[index];
+          finalLine.style.opacity = "1";
+        }, 260);
+      }, 3400);
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      stars.forEach((s) => {
+        s.a += (Math.random() - 0.5) * s.tw;
+        if (s.a < 0.12) s.a = 0.12;
+        if (s.a > 0.92) s.a = 0.92;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      if (Math.random() < 0.015) spawnMeteor();
+
+      for (let i = meteors.length - 1; i >= 0; i -= 1) {
+        const m = meteors[i];
+        m.x += m.vx;
+        m.y += m.vy;
+        m.life += 1;
+        const alpha = 1 - m.life / m.maxLife;
+        ctx.strokeStyle = `rgba(173,222,255,${alpha})`;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(m.x, m.y);
+        ctx.lineTo(m.x - m.vx * 6, m.y - m.vy * 6);
+        ctx.stroke();
+        if (m.life >= m.maxLife) {
+          meteors.splice(i, 1);
+        }
+      }
+
+      if (Math.random() < 0.07) {
+        spawnFloatingHeart();
+      }
+
+      for (let i = hearts.length - 1; i >= 0; i -= 1) {
+        const h = hearts[i];
+        h.x += h.vx;
+        h.y += h.vy;
+        h.life += 1;
+        h.rotation += 0.01;
+        const alpha = Math.max(0, 1 - h.life / h.maxLife);
+        drawHeartShape(h.x, h.y, h.size, h.color, alpha, h.rotation);
+        if (h.life >= h.maxLife) hearts.splice(i, 1);
+      }
+
+      for (let i = particles.length - 1; i >= 0; i -= 1) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.02;
+        p.life += 1;
+        p.rotation += 0.02;
+        const alpha = Math.max(0, 1 - p.life / p.maxLife);
+        drawHeartShape(p.x, p.y, p.size, p.color, alpha, p.rotation);
+        if (p.life >= p.maxLife) particles.splice(i, 1);
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    surpriseBtn.addEventListener("click", () => {
+      finalLine.textContent = `我会把所有温柔和偏爱，都给${recipientName}。`;
+      for (let i = 0; i < 5; i += 1) {
+        setTimeout(() => {
+          spawnBurst(
+            width * (0.15 + Math.random() * 0.7),
+            height * (0.2 + Math.random() * 0.55),
+            22 + Math.floor(Math.random() * 12)
+          );
+        }, i * 180);
+      }
+    });
+
+    window.addEventListener("click", (e) => {
+      spawnBurst(e.clientX, e.clientY, 18);
+    });
+
+    window.addEventListener("resize", resize);
+
+    resize();
+    typeWriter(titleText);
+    cycleFinalText();
+    animate();
+  </script>
+</body>
+</html>
